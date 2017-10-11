@@ -19,6 +19,12 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.5"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency 'rspec-rails', '~> 3.6'
+  spec.add_development_dependency 'combustion', '~> 0.7.0'
+  spec.add_development_dependency 'temping', '~> 3.10'
+  spec.add_development_dependency 'sqlite3', '~> 1.3'
+  spec.add_development_dependency 'rails'
+  spec.add_development_dependency 'capybara'
 
   spec.add_runtime_dependency 'activeadmin'
   spec.add_runtime_dependency 'jquery-rails'
