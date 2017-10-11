@@ -1,7 +1,4 @@
 require 'activeadmin/select2'
 
-require 'activeadmin/inputs/filter_select2_multiple_input'
-require 'formtastic/inputs/select2_input'
-require 'formtastic/inputs/select2_multiple_input'
-require 'formtastic/inputs/select2_tags_input'
-
+require 'activeadmin/inputs/filters/select2_input'
+require 'activeadmin/inputs/select2_input'

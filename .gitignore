@@ -2,3 +2,5 @@
 .ruby-gemset
 Gemfile.lock
 /pkg/*
+/spec/internal/tmp
+/spec/examples.txt
