@@ -1,33 +1,12 @@
 require 'rails_helper'
 
-require 'support/temping'
+require 'support/models'
 require 'support/capybara'
 require 'support/active_admin_helpers'
 
 RSpec.describe 'end to end', type: :feature, js: true do
   before(:each) do
-    sleep 1
-
-    Temping.create(:category, temporary: false) do
-      with_columns do |t|
-        t.string :name
-      end
-    end
-
-    # Do not make posts table temporary to make Ransack table
-    # detection work
-    Temping.create(:post, temporary: false) do
-      with_columns do |t|
-        t.string :title
-        t.belongs_to :category
-      end
-
-      belongs_to :category
-    end
-
     ActiveAdminHelpers.setup do
-      ActiveAdmin.setup {}
-
       ActiveAdmin.register(Category) do
         select2_options(scope: Category, text_attribute: :name)
       end
@@ -39,6 +18,8 @@ RSpec.describe 'end to end', type: :feature, js: true do
           f.input(:category, as: select2, ajax: true)
         end
       end
+
+      ActiveAdmin.setup {}
     end
   end
 

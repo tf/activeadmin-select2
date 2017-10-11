@@ -1,9 +1,11 @@
 module ActiveAdmin
   module Select2
+    # 
     module SelectInputExtension
-      def extra_input_html_options
-        super.merge(class: 'select2-input',
-                    'data-ajax-url' => ajax_url)
+      def input_html_options
+        options = super
+        options[:class] = [options[:class], 'select2-input'].compact.join(' ')
+        options.merge('data-ajax-url' => ajax_url)
       end
 
       def collection_from_options
@@ -15,7 +17,8 @@ module ActiveAdmin
       def ajax_url
         return unless options[:ajax]
         template.polymorphic_path([:admin, ajax_resource_class],
-                                  action: option_collection.collection_action_name)
+                                  action: option_collection.collection_action_name,
+                                  **ajax_params)
       end
 
       def selected_value_collection
@@ -36,14 +39,14 @@ module ActiveAdmin
       end
 
       def option_collection_scope
-        option_collection.scope(template.current_active_admin_user)
+        option_collection.scope(template, ajax_params)
       end
 
       def option_collection
         ajax_resource
           .select2_option_collections
-          .fetch(ajax_options_collection_name) do
-          raise("No option collection named '#{ajax_options_collection_name}' " \
+          .fetch(ajax_option_collection_name) do
+          raise("No option collection named '#{ajax_option_collection_name}' " \
                 "defined in '#{ajax_resource_class.name}' admin.")
         end
       end
@@ -71,8 +74,12 @@ module ActiveAdmin
         end
       end
 
-      def ajax_options_collection_name
+      def ajax_option_collection_name
         ajax_options.fetch(:collection_name, :all)
+      end
+
+      def ajax_params
+        ajax_options.fetch(:params, {})
       end
 
       def ajax_options

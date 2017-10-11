@@ -1,27 +1,10 @@
 require 'rails_helper'
 
-require 'support/temping'
+require 'support/models'
 require 'support/capybara'
 require 'support/active_admin_helpers'
 
 RSpec.describe 'select2 input', type: :request do
-  before(:each) do
-    Temping.create(:category) do
-      with_columns do |t|
-        t.string :name
-      end
-    end
-
-    Temping.create(:post) do
-      with_columns do |t|
-        t.string :title
-        t.belongs_to :category
-      end
-
-      belongs_to :category
-    end
-  end
-
   it 'fails with helpful error message if ajax resource cannot be auto detected' do
     expect do
       ActiveAdminHelpers.setup do

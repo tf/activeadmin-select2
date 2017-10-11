@@ -21,11 +21,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency 'rspec-rails', '~> 3.6'
   spec.add_development_dependency 'combustion', '~> 0.7.0'
-  spec.add_development_dependency 'temping', '~> 3.10'
+  spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'sqlite3', '~> 1.3'
   spec.add_development_dependency 'capybara', '~> 2.15'
   spec.add_development_dependency 'poltergeist', '~> 1.15'
   spec.add_development_dependency 'rails'
+  spec.add_development_dependency 'appraisal'
 
   spec.add_runtime_dependency 'activeadmin'
   spec.add_runtime_dependency 'jquery-rails'

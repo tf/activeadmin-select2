@@ -6,7 +6,7 @@ module ActiveAdmin
         config.select2_option_collections[name] = option_collection
 
         collection_action(option_collection.collection_action_name) do
-          render(json: option_collection.as_json(current_user, params))
+          render(json: option_collection.as_json(self, params))
         end
       end
     end

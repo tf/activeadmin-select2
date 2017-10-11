@@ -1,29 +1,10 @@
 require 'rails_helper'
 
-require 'support/temping'
+require 'support/models'
 require 'support/capybara'
 require 'support/active_admin_helpers'
 
 RSpec.describe 'select2 filter input', type: :request do
-  before(:each) do
-    Temping.create(:category) do
-      with_columns do |t|
-        t.string :name
-      end
-    end
-
-    # Do not make posts table temporary to make Ransack table
-    # detection work
-    Temping.create(:post, temporary: false) do
-      with_columns do |t|
-        t.string :title
-        t.belongs_to :category
-      end
-
-      belongs_to :category
-    end
-  end
-
   describe 'without ajax option' do
     before(:each) do
       ActiveAdminHelpers.setup do
@@ -164,5 +145,47 @@ RSpec.describe 'select2 filter input', type: :request do
     end
 
     include_examples 'renders ajax based select2 input'
+  end
+
+  describe 'with selected option in ajax mode' do
+    it 'applies scope when looking up record' do
+      ActiveAdminHelpers.setup do
+        ActiveAdmin.register(Category) do
+          select2_options(scope: Category.none, text_attribute: :name)
+        end
+
+        ActiveAdmin.register(Post) do
+          filter(:category, as: :select2, ajax: true)
+        end
+      end
+
+      category = Category.create!(name: 'Travel')
+
+      get "/admin/posts?q[category_id_eq]=#{category.id}"
+
+      expect(response.body).not_to have_selector('.select2-input option[selected]')
+    end
+
+    it 'allows to use view helpers in scope lambda' do
+      ActiveAdminHelpers.setup do
+        ActiveAdmin.register(Category) do
+          select2_options(scope: -> { Category.where(created_by: current_user) },
+                          text_attribute: :name)
+        end
+
+        ActiveAdmin.register(Post) do
+          filter(:category, as: :select2, ajax: true)
+        end
+      end
+
+      user = User.create!
+      ApplicationController.current_user = user
+      category = Category.create!(name: 'Travel', created_by: user)
+
+      get "/admin/posts?q[category_id_eq]=#{category.id}"
+
+      expect(response.body).to have_selector('.select2-input option[selected]',
+                                             text: 'Travel')
+    end
   end
 end

@@ -15,10 +15,14 @@ module ActiveAdmin
         end
       end
 
-      def scope(current_user)
+      def scope(template, params)
         case @scope
         when Proc
-          @scope.arity.zero? ? @scope.call : @scope.call(current_user)
+          if @scope.arity.zero?
+            template.instance_exec(&@scope)
+          else
+            template.instance_exec(params, &@scope)
+          end
         else
           @scope
         end
@@ -32,8 +36,8 @@ module ActiveAdmin
         "#{@name}_options"
       end
 
-      def as_json(current_user, params)
-        results = limit(filter(scope(current_user), params[:term]), params[:limit]).map do |record|
+      def as_json(template, params)
+        results = limit(filter(scope(template, params), params[:term]), params[:limit]).map do |record|
           {
             id: record.id,
             text: text(record)

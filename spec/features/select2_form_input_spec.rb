@@ -1,27 +1,10 @@
 require 'rails_helper'
 
-require 'support/temping'
+require 'support/models'
 require 'support/capybara'
 require 'support/active_admin_helpers'
 
 RSpec.describe 'select2 form input', type: :request do
-  before(:each) do
-    Temping.create(:category) do
-      with_columns do |t|
-        t.string :name
-      end
-    end
-
-    Temping.create(:post) do
-      with_columns do |t|
-        t.string :title
-        t.belongs_to :category
-      end
-
-      belongs_to :category
-    end
-  end
-
   describe 'without ajax option' do
     before(:each) do
       ActiveAdminHelpers.setup do
@@ -173,5 +156,23 @@ RSpec.describe 'select2 form input', type: :request do
     end
 
     include_examples 'renders ajax based select2 input'
+  end
+
+  describe 'with custom class attribute' do
+    before(:each) do
+      ActiveAdminHelpers.setup do
+        ActiveAdmin.register(Post) do
+          form do |f|
+            f.input :category, as: :select2, input_html: { class: 'custom' }
+          end
+        end
+      end
+    end
+
+    it 'adds select2-input css class' do
+      get '/admin/posts/new'
+
+      expect(response.body).to have_selector('select.custom.select2-input')
+    end
   end
 end

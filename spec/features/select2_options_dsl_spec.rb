@@ -1,35 +1,10 @@
 require 'rails_helper'
 
-require 'support/temping'
+require 'support/models'
+require 'support/pluck_polyfill'
 require 'support/active_admin_helpers'
 
 RSpec.describe 'select2_options dsl', type: :request do
-  before(:each) do
-    Temping.create(:user) do
-      with_columns do |t|
-        t.string :name
-      end
-    end
-
-    # Do not make posts table temporary to make Ransack table
-    # detection work
-    Temping.create(:post, temporary: false) do
-      with_columns do |t|
-        t.string :title
-        t.belongs_to :user
-        t.boolean :published
-      end
-
-      belongs_to :user
-
-      scope(:published, -> { where(published: true) })
-    end
-  end
-
-  let!(:current_user) do
-    ApplicationController.current_user = User.create!
-  end
-
   describe 'creates JSON endpoint that' do
     before(:each) do
       ActiveAdminHelpers.setup do
@@ -87,21 +62,41 @@ RSpec.describe 'select2_options dsl', type: :request do
     expect(titles).to eq(['Published post'])
   end
 
-  it 'allows passing lambda as scope that takes current user as argument' do
+  it 'allows passing lambda as scope that uses view helpers' do
     ActiveAdminHelpers.setup do
       ActiveAdmin.register(Post) do
-        select2_options(scope: ->(current_user) { Post.where(user: current_user) },
+        select2_options(scope: -> { Post.where(user: current_user) },
                         text_attribute: :title)
       end
     end
 
-    Post.create!(title: 'By current user', user: current_user)
+    user = User.create!
+    Post.create!(title: 'By current user', user: user)
     Post.create!(title: 'By other user', user: User.create!)
 
+    ApplicationController.current_user = user
     get '/admin/posts/all_options'
     titles = json_response[:results].pluck(:text)
 
     expect(titles).to eq(['By current user'])
+  end
+
+  it 'allows passing lambda that takes params argument' do
+    ActiveAdminHelpers.setup do
+      ActiveAdmin.register(Post) do
+        select2_options(scope: ->(params) { Post.where(user_id: params[:user]) },
+                        text_attribute: :title)
+      end
+    end
+
+    user = User.create!
+    Post.create!(title: 'By given user', user: user)
+    Post.create!(title: 'By other user', user: User.create!)
+
+    get "/admin/posts/all_options?user=#{user.id}"
+    titles = json_response[:results].pluck(:text)
+
+    expect(titles).to eq(['By given user'])
   end
 
   it 'allows passing name prefix for collection action' do
